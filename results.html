@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confronto Render - Denoising e Dettagli</title>
+    <style>
+        /* Impostazioni di base */
+        body {
+            background-color: #0f0f0f;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1 { text-align: center; margin-bottom: 50px; font-weight: 300; letter-spacing: 2px; }
+
+        /* Stile di ogni blocco di confronto (i 9 casi) */
+        .caso-container {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 60px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .caso-titolo {
+            font-size: 24px;
+            border-bottom: 2px solid #007aff;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        /* Griglia per i 4 render completi */
+        .griglia-principale {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Griglia per i 2 dettagli */
+        .griglia-dettagli {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            border-top: 1px dashed #444;
+            padding-top: 20px;
+        }
+
+        /* Stile del singolo riquadro immagine */
+        .riquadro {
+            background-color: #000;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .riquadro img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border: 1px solid #222;
+        }
+
+        .etichetta {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+        
+        /* Colori per distinguere le tue dalle standard */
+        .mia { color: #00c853; }
+        .std { color: #007aff; }
+        
+        /* Stile della Tabella Caratteristiche Aggiornato */
+        .tabella-caratteristiche {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            background-color: #161616;
+            font-size: 14px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tabella-caratteristiche th, .tabella-caratteristiche td {
+            border: 1px solid #2a2a2a;
+            padding: 14px 18px;
+            text-align: left;
+            vertical-align: top; /* Allinea il testo in alto, utile per descrizioni lunghe */
+            line-height: 1.5;
+        }
+
+        .tabella-caratteristiche th {
+            background-color: #1e1e1e;
+            color: #888; /* Grigio chiaro per non distrarre troppo */
+            font-weight: 600;
+            width: 20%;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+        }
+
+        .tabella-caratteristiche td {
+            color: #e0e0e0;
+            width: 30%;
+        }
+        
+        /* Stile specifico per le righe che occupano tutta la larghezza (colspan=3) */
+        .tabella-caratteristiche td[colspan="3"] {
+            width: 80%;
+            background-color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ANALISI COMPARATIVA RENDER (9 SCENE)</h1>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 01 - Cornell box</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena standard per la valutazione di sistemi di rendering</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>624.62 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>625.57 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path Tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>1024</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>2.76 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro">
+                <img src="comparison_renders_html\cornell_box_thinlens_1024spp_001.png" alt="Standard 1">
+                <div class="etichetta std">Thinlens (Raw)</div>
+            </div>
+            <div class="riquadro">
+                <img src="comparison_renders_html\cornell_box_hybrid_fft_sensor_1024spp_001.png" alt="Mia 1">
+                <div class="etichetta mia">Aberrated (Raw)</div>
+            </div>
+            <div class="riquadro">
+                <img src="comparison_renders_html\cornell_box_thinlens_1024_denoised.png" alt="Standard Denoised 1">
+                <div class="etichetta std">Thinlens Denoised</div>
+            </div>
+            <div class="riquadro">
+                <img src="comparison_renders_html\cornell_box_hybrid_fft_sensor_1024_denoised.png" alt="Mia Denoised 1">
+                <div class="etichetta mia">Aberrated Denoised</div>
+            </div>
+        </div>     
+    </div>
+    <div class="caso-container">
+    <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 02 - Cornell box glass</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena scelta per la valutazione del comportamento del sensore in presenza di superfici riflettenti</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>745.47 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>759.53 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path Tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>1024</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>2.76 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro">
+                <img src="comparison_renders_html\glass_cornell_box_thinlens_1024spp_001.png" alt="Standard 1">
+                <div class="etichetta std">Thinlens</div>
+            </div>
+            <div class="riquadro">
+                <img src="comparison_renders_html\glass_cornell_box_hybrid_fft_sensor_1024spp_001.png" alt="Mia 1">
+                <div class="etichetta mia">Aberrated</div>
+            </div>
+            <div class="riquadro">
+                <img src="comparison_renders_html\glass_cornell_box_thinlens_1024_denoised.png" alt="Standard Denoised 1">
+                <div class="etichetta std">Thinlens (Denoised)</div>
+            </div>
+            <div class="riquadro">
+                <img src="comparison_renders_html\glass_cornell_box_hybrid_fft_sensor_1024_denoised.png" alt="Mia Denoised 1">
+                <div class="etichetta mia">Aberrated (Denoised)</div>
+            </div>
+        </div>
+        </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 03 - Cornell box water</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione del comportamento del sensore in presenza di caustiche</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>939.79 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>968.90 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path Tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>1024</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>2.76 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html\water_cornell_box_thinlens_1024spp_001.png" alt="Standard (Raw)">
+                <div class="etichetta std">Thinlens</div>
+            </div>
+            <div class="riquadro"><img src="comparison_renders_html\water_cornell_box_hybrid_fft_sensor_1024spp_001.png" alt="Mia (Raw)">
+                <div class="etichetta mia">Aberrated</div>
+            </div>
+            <div class="riquadro"><img src="comparison_renders_html\water_cornell_box_thinlens_1024_denoised.png" alt="Standard Denoised">
+                <div class="etichetta std">Thinlens (Denoised)</div>
+            </div>
+            <div class="riquadro"><img src="comparison_renders_html\water_cornell_box_hybrid_fft_sensor_1024_denoised.png" alt="Mia Denoised">
+                <div class="etichetta mia">Aberrated (Denoised)</div>
+            </div>
+    </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 04 - Lego</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione di dettagli fini di materiali non organici</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>414.74 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>441.07 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path Tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>1024</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>2.78 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>85</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/2.8</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html\lego_thinlens_1024spp_001.png" alt="Mia (Raw)">
+                <div class="etichetta mia">Thinlens</div></div>
+            <div class="riquadro"><img src="comparison_renders_html\lego_hybrid_fft_sensor_1024spp_001.png" alt="Standard (Raw)">
+                <div class="etichetta std">Aberrated</div></div>
+            <div class="riquadro"><img src="comparison_renders_html\lego_thinlens_1024_denoised.png" alt="Standard Denoised">
+                <div class="etichetta std">Thinlens (Denoised)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html\lego_hybrid_fft_sensor_1024_denoised.png" alt="Mia Denoised">
+                <div class="etichetta mia">Aberrated (Denoised)</div></div>
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="03_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="03_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 05 - Detective room</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione di dettagli fini di quali textures contenenti testi</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>929.66 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>988.42 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path Tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>256</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>6 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>35</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/2.8</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">3840 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html/detective_room_thinlens_256spp_001.png">
+                <div class="etichetta std">Thinlens</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/detective_room_hybrid_fft_sensor_256spp_001.png">
+                <div class="etichetta mia">Aberrated</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/detective_room_thinlens_256_denoised.png">
+                <div class="etichetta std">Thinlens (Denoised)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/detective_room_hybrid_fft_sensor_256_denoised.png">
+                <div class="etichetta mia">Aberrated (Denoised)</div></div>
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="04_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="04_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 06 - Profumo</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione delle superfici riflettenti e delle texture contenenti testi</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>728.36 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>745.73 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path Tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>1024</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>8.5 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html/perfume_thinlens_1024spp_001.png"><div class="etichetta std">Thinlens</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/perfume_hybrid_fft_sensor_1024spp_001.png"><div class="etichetta mia">Aberrated </div></div>
+            <div class="riquadro"><img src="comparison_renders_html/perfume_thinlens_1024_denoised.png"><div class="etichetta std">Thinlens (Denoised)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/perfume_hybrid_fft_sensor_1024_denoised.png"><div class="etichetta mia">Aberrated (Denoised)</div></div>
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="05_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="05_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 07 - Foresta d'inverno</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione del comportamento della sensore aberrato in rapporto alla volumetria</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>3516.33 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>3563.20 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Volpathmis</td>
+                    <th>Samples (SPP)</th>
+                    <td>512</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>10 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>35</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html/winter_thinlens_512.png"><div class="etichetta std">Standard (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/winter_hybrid_fft_sensor_512.png"><div class="etichetta mia">Mia (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/winter_thinlens_512_denoised.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/winter_hybrid_fft_sensor_512_denoised.png"><div class="etichetta mia">Mia Denoised</div></div>
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="06_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="06_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 08 - Molo</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione del comportamento del sensore in presenza di acqua  in una scena organica</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>1140.71 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>1111.02 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>256</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>20 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">3840 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html/molo_thinlens_256spp_001.png"><div class="etichetta std">Standard (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/molo_hybrid_fft_sensor_256spp_001.png"><div class="etichetta mia">Mia (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/molo_thinlens_256_denoised.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/molo_hybrid_fft_sensor_256_denoised.png"><div class="etichetta mia">Mia Denoised</div></div>
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="07_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="07_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+    <div class="caso-container">
+        <table class="tabella-caratteristiche">
+            <tbody>
+                <tr>
+                    <th>Nome Scena</th>
+                    <td colspan="3" style="font-weight: bold; font-size: 16px; color: #fff;">Scena 09 - Auto</td>
+                </tr>
+                <tr>
+                    <th>Caratteristiche</th>
+                    <td colspan="3"> Scena selezionata per l'osservazione del comportamento del sensore in presenza materiali metallici</td>
+                </tr>
+                
+                <tr>
+                    <th>Tempo Thinlens</th>
+                    <td>375.60 s</td>
+                    <th>Tempo Hybrid FFT</th>
+                    <td>393.36 s</td>
+                </tr>
+                <tr>
+                    <th>Integrator</th>
+                    <td>Path tracer</td>
+                    <th>Samples (SPP)</th>
+                    <td>512</td>
+                </tr>
+                <tr>
+                    <th>Distanza di Fuoco</th>
+                    <td>23.98 m</td>
+                    <th>Apertura (mm)</th>
+                    <td>187</td>
+                </tr>
+                <tr>
+                    <th>F-Stops</th>
+                    <td>f/1.4</td>
+                    <th>Tipo di Sampling</th>
+                    <td>Multijitter</td>
+                </tr>
+                <tr>
+                    <th>Risoluzione</th>
+                    <td colspan="3">2160 x 2160 px</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html/car_thinlens_512spp_001.png"><div class="etichetta std">Standard (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/car_hybrid_fft_sensor_512spp_001.png"><div class="etichetta mia">Mia (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/car_thinlens_512_denoised.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/car_hybrid_fft_sensor_512_denoised.png"><div class="etichetta mia">Mia Denoised</div></div>
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="08_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="08_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+    <div class="caso-container">
+        <h2 class="caso-titolo">Confronto Mira ISO12233 - Thinlens | Aberrazioni singole</h2>
+        <div class="griglia-principale">
+            <div class="riquadro"><img src="comparison_renders_html/iso12233_thinlens_4096spp_001.png"><div class="etichetta std">Standard (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/5_71_thinlens.png"><div class="etichetta mia">Mia (Raw)</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/iso12233_hybrid_fft_sensor_4096spp_astigmatism.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/5_71_astigmatism.png"><div class="etichetta mia">Mia Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/iso12233_hybrid_fft_sensor_4096spp_coma.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/5_71_coma.png"><div class="etichetta mia">Mia Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/iso12233_hybrid_fft_sensor_4096spp_-0.75.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/5_71_negative_spherical.png"><div class="etichetta mia">Mia Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/iso12233_hybrid_fft_sensor_4096spp_0.75.png"><div class="etichetta std">Standard Denoised</div></div>
+            <div class="riquadro"><img src="comparison_renders_html/5_71_positive_spherical.png"><div class="etichetta mia">Mia Denoised</div></div>
+            
+        </div>
+        <div class="griglia-dettagli">
+            <div class="riquadro"><img src="09_dettaglio_A.png"><div class="etichetta">Dettaglio A</div></div>
+            <div class="riquadro"><img src="09_dettaglio_B.png"><div class="etichetta">Dettaglio B</div></div>
+        </div>
+    </div>
+
+</body>
+</html>
