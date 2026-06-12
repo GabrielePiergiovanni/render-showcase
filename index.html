@@ -664,7 +664,7 @@
                     const img = this.querySelector('img');
                     
                     // Se stiamo passando il mouse sopra un grafico MTF, blocca lo script all'istante
-                    if (!img || img.src.includes('5_71')) return;
+                    if ((!img || img.src.includes('5_71')) || (!img || img.src.includes('defocus'))) return;
 
                     const rect = img.getBoundingClientRect();
                     let x = e.clientX - rect.left;
@@ -678,7 +678,7 @@
 
                     // Applica lo zoom SOLO alle immagini vere (escludendo i grafici MTF)
                     tutteLeImmagini.forEach(siblingImg => {
-                        if (!siblingImg.src.includes('5_71')) {
+                        if (!siblingImg.src.includes('5_71') && !siblingImg.src.includes('defocus')) {
                             siblingImg.style.transformOrigin = `${xPercent}% ${yPercent}%`;
                             siblingImg.style.transform = 'scale(10)'; // Metti la potenza di zoom che vuoi qui
                             siblingImg.style.zIndex = '10';
